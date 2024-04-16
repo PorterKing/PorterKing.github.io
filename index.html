@@ -40,10 +40,10 @@
         </div>
     </div>
     <div class="modal show" style="top:24%;">
-        <div class="modal-dialog" style="opacity: .9">
+        <div class="modal-dialog" style="opacity: .9" onclick="playAudio()">
             <div class="modal-content" style="opacity:.85">
                 <div class="modal-header">
-                    <h1 class="text-center" style="color: #A94442;font-family: 'JournalRegular', Arial, sans-serif;font-size: 6rem;">The Times We Together</h1>
+                    <h1 class="text-center" style="color: #A94442;font-family: 'JournalRegular', Arial, sans-serif;font-size: 6rem;" >The Times We Together.</h1>
                     <p class="text-center small-title">JCB & HLX</p>
                     <p class="text-center small-title">LOVING ON THE WAY</p>
                 </div>
@@ -59,12 +59,18 @@
             </div>
         </div>
     </div>
-     <audio autoplay="autoplay" src="./music.mp3" loop="-1">
+     <audio id="myAudio" autoplay="autoplay" src="./music.mp3" loop="-1">
     	<source src="./music.mp3" type="audio/mp3" />
     </audio>
     <script type="text/javascript" src="./js/jquery-1.12.2.min.js"></script>
     <script type="text/javascript" src="./js/bootstrap.min.js"></script>
     <script type="text/javascript" src="./js/count-time.js"></script>
+    <script>
+    function playAudio() {
+     var audio = document.getElementById("myAudio");
+     audio.play();
+    }
+    </script>
     <script>
     $(function() {
         //设置起始日期
