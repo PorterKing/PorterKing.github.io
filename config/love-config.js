@@ -18,7 +18,7 @@ const LOVE_CONFIG = {
         // 时间计数器更新间隔（毫秒）
         timerInterval: 1000,
         // 图片轮播间隔（毫秒）
-        imageInterval: 3000,
+        imageInterval: 5000,
         // 爱心动画配置
         heartAnimation: {
             enabled: true,
