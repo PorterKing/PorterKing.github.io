@@ -442,22 +442,22 @@ class ImageSlider {
         }
     }
 
-    prevImage() {
+    prevImage(isManual = true) {
         if (this.images.length === 0) return;
         this.showImage(this.currentImageIndex - 1);
 
-        // 暂停自动播放一段时间
-        if (this.isAutoPlay) {
+        // 只有手动操作时才暂停自动播放一段时间
+        if (this.isAutoPlay && isManual) {
             this.restartAutoPlay();
         }
     }
 
-    nextImage() {
+    nextImage(isManual = true) {
         if (this.images.length === 0) return;
         this.showImage(this.currentImageIndex + 1);
 
-        // 暂停自动播放一段时间
-        if (this.isAutoPlay) {
+        // 只有手动操作时才暂停自动播放一段时间
+        if (this.isAutoPlay && isManual) {
             this.restartAutoPlay();
         }
     }
@@ -472,7 +472,7 @@ class ImageSlider {
         this.stopAutoPlay();
         this.autoPlayInterval = setInterval(() => {
             console.log('🔄 自动切换到下一张图片');
-            this.nextImage();
+            this.nextImage(false); // 传入false表示这是自动调用
         }, LOVE_CONFIG.display.imageInterval);
     }
 
