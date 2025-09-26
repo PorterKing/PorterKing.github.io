@@ -299,19 +299,12 @@ class LoveMemoryApp {
         const imageInfo = this.imageSlider ? this.imageSlider.getCurrentImageInfo() : null;
         const musicInfo = this.musicPlayer ? this.musicPlayer.getPlayerState() : null;
         const timerStats = this.loveTimer ? this.loveTimer.getTotalStats() : null;
-        const cacheStats = this.imageSlider ? this.imageSlider.getCacheStats() : null;
-
         const infoText = `
         📊 系统信息：
         📷 图片: ${imageInfo ? `${imageInfo.total} 张` : '未加载'}
         🎵 音乐: ${musicInfo ? `${musicInfo.tracksCount} 首` : '未加载'}
         ⏰ 相恋时间: ${timerStats ? `${timerStats.totalDays} 天` : '计算中'}
         💕 制作于: 2024年
-
-        🚀 性能信息：
-        💾 缓存图片: ${cacheStats ? `${cacheStats.cachedImages} 张` : '0'}
-        📈 缓存命中率: ${cacheStats ? `${(cacheStats.cacheHitRate * 100).toFixed(1)}%` : '0%'}
-        ⚡ 预加载图片: ${cacheStats ? `${cacheStats.preloadedImages} 张` : '0'}
         `;
 
         this.showFloatingMessage(infoText, 6000);

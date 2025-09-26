@@ -1,21 +1,23 @@
 /**
- * 自动生成图片列表 - 基于规范命名 0-23.JPG
- * 支持动态扫描 images 文件夹下的所有图片
+ * 自动生成图片列表 - 基于规范命名 0-99.JPG
+ * 只扫描JPG格式，最多支持100张图片（0-99）
+ * 兼容大小写：JPG 和 jpg
  */
 
-// 生成规范命名的图片列表 - 支持多种格式
+// 生成规范命名的图片列表 - 只扫描JPG格式，最多100张
 function generateImagesList() {
     const imagesList = [];
-    const supportedFormats = ['JPG', 'jpg', 'PNG', 'png', 'JPEG', 'jpeg'];
+    const supportedFormats = ['JPG', 'jpg']; // 只支持JPG格式（大小写兼容）
 
-    // 生成 0-99 范围的图片路径，支持多种格式
+    // 生成 0-99 范围的图片路径（共100张）
     for (let i = 0; i <= 99; i++) {
-        // 为每个数字尝试所有支持的格式
+        // 为每个数字尝试大写和小写的JPG格式
         supportedFormats.forEach(format => {
             imagesList.push(`assets/images/${i}.${format}`);
         });
     }
 
+    console.log(`📋 生成图片扫描列表: 0-99 共100张，支持格式: JPG/jpg`);
     return imagesList;
 }
 
