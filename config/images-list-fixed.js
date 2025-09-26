@@ -21,9 +21,31 @@ function generateImagesList() {
 
 const IMAGES_LIST = generateImagesList();
 
-const MUSIC_LIST = [
-    'assets/music/music2.mp3'
-];
+// 生成音乐文件列表 - 自动扫描常见音乐文件
+function generateMusicList() {
+    const musicList = [];
+    const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a'];
+
+    // 常见的音乐文件命名模式 - 优先检测现有文件
+    const commonNames = [
+        'music',      // 当前存在的文件
+        'music1', 'music2', 'music3', 'music4', 'music5',
+        'song', 'song1', 'song2', 'song3', 'song4', 'song5',
+        'background', 'bgm', 'love', 'romantic',
+        '1', '2', '3', '4', '5'  // 数字命名
+    ];
+
+    // 为每个名称和格式组合生成路径
+    commonNames.forEach(name => {
+        supportedFormats.forEach(format => {
+            musicList.push(`assets/music/${name}.${format}`);
+        });
+    });
+
+    return musicList;
+}
+
+const MUSIC_LIST = generateMusicList();
 
 // 导出配置
 if (typeof module !== 'undefined' && module.exports) {
