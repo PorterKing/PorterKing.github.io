@@ -22,7 +22,6 @@ function generateImagesList() {
 const IMAGES_LIST = generateImagesList();
 
 const MUSIC_LIST = [
-    'assets/music/music1.mp3',
     'assets/music/music2.mp3'
 ];
 

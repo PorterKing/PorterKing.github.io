@@ -116,7 +116,15 @@ class MusicPlayer {
 
         // 音乐播放结束
         this.audio.addEventListener('ended', () => {
-            this.nextTrack();
+            if (this.musicTracks.length === 1 && !this.audio.loop) {
+                // 单曲循环播放（如果loop没有生效的话）
+                console.log('🔄 单曲播放结束，重新开始');
+                this.replayCurrent();
+            } else if (this.musicTracks.length > 1) {
+                // 多曲时切换到下一首
+                this.nextTrack();
+            }
+            // 如果loop=true，浏览器会自动循环，不需要手动处理
         });
 
         // 播放出错
@@ -168,7 +176,13 @@ class MusicPlayer {
                 this.togglePlay();
             } else if (e.key === 'n' || e.key === 'N') {
                 e.preventDefault();
-                this.nextTrack();
+                if (this.musicTracks.length === 1) {
+                    // 单曲时按N键重新开始播放
+                    console.log('🔄 单曲模式下重新开始播放');
+                    this.replayCurrent();
+                } else {
+                    this.nextTrack();
+                }
             }
         });
 
@@ -241,10 +255,33 @@ class MusicPlayer {
         this.audio.src = track.path;
         this.audio.load();
 
+        // 如果只有一首歌，设置为循环播放
+        if (this.musicTracks.length === 1) {
+            this.audio.loop = true;
+            console.log(`🔄 单曲循环模式已开启: ${track.name}`);
+        } else {
+            this.audio.loop = false;
+        }
+
         // 更新界面显示
         this.updateMusicInfo(track);
 
         console.log(`加载音乐: ${track.name}`);
+    }
+
+    replayCurrent() {
+        if (this.musicTracks.length === 0) return;
+
+        console.log('🔄 单曲循环播放');
+
+        // 重置播放位置到开头
+        if (this.audio) {
+            this.audio.currentTime = 0;
+            // 继续播放
+            this.audio.play().catch(error => {
+                console.error('单曲循环播放失败:', error);
+            });
+        }
     }
 
     nextTrack() {
@@ -254,7 +291,9 @@ class MusicPlayer {
 
         // 如果只有一首歌，重新播放同一首
         if (this.musicTracks.length === 1) {
-            this.loadTrack(0);
+            console.log('🎵 只有一首歌，重新开始播放');
+            this.replayCurrent();
+            return;
         } else {
             // 多首歌时，切换到下一首，实现轮询播放
             const nextIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
@@ -278,7 +317,9 @@ class MusicPlayer {
 
         // 如果只有一首歌，重新播放同一首
         if (this.musicTracks.length === 1) {
-            this.loadTrack(0);
+            console.log('🎵 只有一首歌，重新开始播放');
+            this.replayCurrent();
+            return;
         } else {
             // 多首歌时，切换到上一首，实现轮询播放
             const prevIndex = (this.currentTrackIndex - 1 + this.musicTracks.length) % this.musicTracks.length;
@@ -331,7 +372,14 @@ class MusicPlayer {
         if (this.elements.musicInfo) {
             const musicName = this.elements.musicInfo.querySelector('.music-name');
             if (musicName) {
-                musicName.textContent = track ? track.name : '暂无音乐';
+                let displayName = track ? track.name : '暂无音乐';
+
+                // 如果只有一首歌，显示循环标识
+                if (this.musicTracks.length === 1 && track) {
+                    displayName = `🔄 ${track.name} (单曲循环)`;
+                }
+
+                musicName.textContent = displayName;
             }
         }
     }
