@@ -162,6 +162,10 @@ class LoveMemoryApp {
                         e.preventDefault();
                         this.showAppInfo();
                         break;
+                    case 'd':
+                        e.preventDefault();
+                        this.showDebugInfo();
+                        break;
                 }
             }
         });

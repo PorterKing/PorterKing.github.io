@@ -37,7 +37,13 @@ class ImageSlider {
             // 显示第一张图片
             if (this.images.length > 0) {
                 this.showImage(0);
-                this.startAutoPlay();
+                // 延迟启动自动播放，确保初始化完成
+                setTimeout(() => {
+                    if (this.images.length > 1) {
+                        console.log('🚀 延迟启动自动轮播...');
+                        this.startAutoPlay();
+                    }
+                }, 1000);
             } else {
                 this.showNoImagesMessage();
             }
@@ -52,16 +58,28 @@ class ImageSlider {
         // 使用预定义的图片列表
         const imagesToCheck = window.IMAGES_LIST || [];
 
-        console.log(`正在检查 ${imagesToCheck.length} 张图片...`);
+        console.log('🖼️ 开始加载图片列表...');
+        console.log('📋 预定义图片列表长度:', imagesToCheck.length);
+        console.log('🔍 前10项预览:', imagesToCheck.slice(0, 10));
 
         // 优先加载前几张图片
-        const priorityImages = await this.loadPriorityImages(imagesToCheck.slice(0, 5));
+        const priorityImages = await this.loadPriorityImages(imagesToCheck.slice(0, 8));
 
         if (priorityImages.length > 0) {
             this.images = priorityImages;
+            console.log(`🎯 优先加载完成，共 ${priorityImages.length} 张图片`);
             this.showImage(0); // 立即显示第一张
             this.updateCounter();
-            console.log(`优先加载了前 ${priorityImages.length} 张图片`);
+
+            // 启动自动轮播（如果有多张图片）
+            if (priorityImages.length > 1) {
+                console.log('🔄 启动自动轮播...');
+                this.startAutoPlay();
+            } else {
+                console.log('ℹ️ 只有一张图片，不启动自动轮播');
+            }
+        } else {
+            console.error('❌ 没有找到任何可用的图片!');
         }
 
         // 后台继续加载剩余图片
@@ -69,23 +87,30 @@ class ImageSlider {
     }
 
     async loadPriorityImages(priorityPaths) {
-        console.log('正在优先加载前几张图片...');
+        console.log('🔍 正在优先加载前几张图片...');
         const existingImages = [];
 
         // 顺序加载优先图片，确保按顺序显示
         for (const imagePath of priorityPaths) {
             try {
+                console.log(`🔍 检查优先图片: ${imagePath}`);
                 const exists = await this.preloadImage(imagePath);
                 if (exists) {
+                    console.log(`✅ 优先图片可用: ${imagePath}`);
                     existingImages.push(imagePath);
                     this.preloadedImages.add(imagePath);
+                } else {
+                    console.log(`❌ 优先图片不可用: ${imagePath}`);
                 }
             } catch (error) {
+                console.error(`🚫 优先图片检查出错: ${imagePath}`, error);
                 continue;
             }
         }
 
-        return this.sortImagesByNumber(existingImages);
+        const sortedImages = this.sortImagesByNumber(existingImages);
+        console.log(`📊 优先图片排序后:`, sortedImages);
+        return sortedImages;
     }
 
     async loadRemainingImages(allImagePaths) {
@@ -464,10 +489,15 @@ class ImageSlider {
     }
 
     startAutoPlay() {
-        if (!this.isAutoPlay || this.images.length <= 1) return;
+        if (!this.isAutoPlay || this.images.length <= 1) {
+            console.log(`⏸️ 不启动自动轮播 - isAutoPlay: ${this.isAutoPlay}, 图片数量: ${this.images.length}`);
+            return;
+        }
 
+        console.log(`🔄 启动自动轮播 - 间隔: ${LOVE_CONFIG.display.imageInterval}ms`);
         this.stopAutoPlay();
         this.autoPlayInterval = setInterval(() => {
+            console.log('🔄 自动切换到下一张图片');
             this.nextImage();
         }, LOVE_CONFIG.display.imageInterval);
     }

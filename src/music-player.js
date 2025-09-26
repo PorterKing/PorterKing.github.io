@@ -50,6 +50,9 @@ class MusicPlayer {
         // 使用预定义的音乐列表
         const musicList = window.MUSIC_LIST || [];
 
+        console.log('🎵 开始加载音乐列表...');
+        console.log('📋 预定义音乐列表:', musicList);
+
         const predefinedTracks = musicList.map((path, index) => {
             const filename = path.split('/').pop();
             const name = filename.replace(/\.[^/.]+$/, ""); // 移除扩展名
@@ -59,12 +62,20 @@ class MusicPlayer {
             };
         });
 
-        console.log(`正在检查 ${predefinedTracks.length} 首音乐...`);
+        console.log(`🔍 正在检查 ${predefinedTracks.length} 首音乐的可用性...`);
 
         // 检查哪些音乐文件存在
         this.musicTracks = await this.checkMusicTracksExist(predefinedTracks);
 
-        console.log(`成功加载 ${this.musicTracks.length} 首音乐`);
+        console.log(`✅ 成功加载 ${this.musicTracks.length} 首音乐`);
+
+        if (this.musicTracks.length === 0) {
+            console.error('❌ 没有找到任何可用的音乐文件!');
+            console.log('🔧 请检查以下几点:');
+            console.log('  1. 音乐文件是否存在于 assets/music/ 目录');
+            console.log('  2. 文件名是否正确');
+            console.log('  3. 网络连接和文件权限');
+        }
     }
 
     async checkMusicTracksExist(tracks) {
@@ -72,11 +83,16 @@ class MusicPlayer {
 
         for (const track of tracks) {
             try {
+                console.log(`🔍 检查音乐文件: ${track.path}`);
                 const exists = await this.audioFileExists(track.path);
                 if (exists) {
+                    console.log(`✅ 音乐文件可用: ${track.path}`);
                     existingTracks.push(track);
+                } else {
+                    console.log(`❌ 音乐文件不可用: ${track.path}`);
                 }
             } catch (error) {
+                console.error(`🚫 音乐文件检查出错: ${track.path}`, error);
                 continue;
             }
         }
@@ -89,19 +105,30 @@ class MusicPlayer {
             const audio = new Audio();
 
             const timeout = setTimeout(() => {
+                console.log(`⏰ 音频检查超时: ${audioPath}`);
                 resolve(false);
-            }, 5000); // 5秒超时
+            }, 8000); // 增加到8秒超时，适应网络延迟
 
             audio.addEventListener('canplaythrough', () => {
+                console.log(`🎵 音频可以播放: ${audioPath}`);
                 clearTimeout(timeout);
                 resolve(true);
             });
 
-            audio.addEventListener('error', () => {
+            audio.addEventListener('loadeddata', () => {
+                console.log(`📦 音频数据已加载: ${audioPath}`);
+                clearTimeout(timeout);
+                resolve(true);
+            });
+
+            audio.addEventListener('error', (e) => {
+                console.error(`❌ 音频加载错误: ${audioPath}`, e);
                 clearTimeout(timeout);
                 resolve(false);
             });
 
+            // 设置音频源开始加载
+            console.log(`📡 开始加载音频: ${audioPath}`);
             audio.src = audioPath;
         });
     }
