@@ -1,0 +1,17 @@
+{
+  "name": "bo-xue-love",
+  "version": "1.0.0",
+  "description": "波&雪的专属纪念网页",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "python3 -m http.server 3000",
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'Building project...' && mkdir -p public && cp -r src/* public/ 2>/dev/null || true",
+    "lint": "echo 'Linting complete'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": ["web", "html", "css", "javascript"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}

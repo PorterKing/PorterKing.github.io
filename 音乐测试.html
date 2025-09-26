@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐测试 - 波&雪</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .music-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .music-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #ff6b9d, #c89ae6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .music-info {
+            flex: 1;
+        }
+        .music-title {
+            font-weight: bold;
+            color: #ff6b9d;
+            margin-bottom: 5px;
+        }
+        .music-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+        .status-loading { background: #ffa500; }
+        .status-ready { background: #4CAF50; }
+        .status-error { background: #f44336; }
+        .status-playing { background: #2196F3; }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .volume-slider {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>🎵 音乐播放测试 🎵</h1>
+            <p>测试更新后的音乐文件是否能正常播放</p>
+        </div>
+
+        <div id="musicList">
+            <!-- 音乐列表会动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        const musicFiles = [
+            'assets/music/music1.mp3',
+            'assets/music/music2.mp3'
+        ];
+
+        const musicList = document.getElementById('musicList');
+        const audioPlayers = [];
+
+        musicFiles.forEach((musicPath, index) => {
+            const card = document.createElement('div');
+            card.className = 'music-card';
+
+            const audio = new Audio();
+            audioPlayers.push(audio);
+
+            const fileName = musicPath.split('/').pop().replace('.mp3', '');
+            const displayName = fileName === 'music1' ? '浪漫音乐 1' :
+                               fileName === 'music2' ? '浪漫音乐 2' : fileName;
+
+            card.innerHTML = `
+                <div class="music-info">
+                    <div class="music-title">${displayName}</div>
+                    <div class="music-status status-loading" id="status-${index}">检测中...</div>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" class="volume-slider" id="volume-${index}" min="0" max="100" value="30">
+                        <span id="volume-text-${index}">30%</span>
+                    </div>
+                </div>
+                <div class="music-controls">
+                    <button class="btn" id="play-${index}" onclick="togglePlay(${index})" disabled>播放</button>
+                    <button class="btn" id="stop-${index}" onclick="stopMusic(${index})" disabled>停止</button>
+                </div>
+            `;
+
+            musicList.appendChild(card);
+
+            // 设置音频事件
+            audio.addEventListener('loadeddata', () => {
+                const status = document.getElementById(`status-${index}`);
+                const playBtn = document.getElementById(`play-${index}`);
+                const stopBtn = document.getElementById(`stop-${index}`);
+
+                status.textContent = '✅ 就绪';
+                status.className = 'music-status status-ready';
+                playBtn.disabled = false;
+                stopBtn.disabled = false;
+            });
+
+            audio.addEventListener('error', () => {
+                const status = document.getElementById(`status-${index}`);
+                status.textContent = '❌ 加载失败';
+                status.className = 'music-status status-error';
+            });
+
+            audio.addEventListener('play', () => {
+                const status = document.getElementById(`status-${index}`);
+                status.textContent = '▶️ 播放中';
+                status.className = 'music-status status-playing';
+            });
+
+            audio.addEventListener('pause', () => {
+                const status = document.getElementById(`status-${index}`);
+                status.textContent = '⏸️ 暂停';
+                status.className = 'music-status status-ready';
+            });
+
+            // 音量控制
+            const volumeSlider = document.getElementById(`volume-${index}`);
+            const volumeText = document.getElementById(`volume-text-${index}`);
+
+            volumeSlider.addEventListener('input', (e) => {
+                const volume = e.target.value / 100;
+                audio.volume = volume;
+                volumeText.textContent = `${e.target.value}%`;
+            });
+
+            // 设置默认音量
+            audio.volume = 0.3;
+
+            // 加载音频
+            audio.src = musicPath;
+            audio.preload = 'metadata';
+        });
+
+        // 播放/暂停控制
+        function togglePlay(index) {
+            const audio = audioPlayers[index];
+            const playBtn = document.getElementById(`play-${index}`);
+
+            if (audio.paused) {
+                // 停止其他正在播放的音乐
+                audioPlayers.forEach((player, i) => {
+                    if (i !== index && !player.paused) {
+                        player.pause();
+                        document.getElementById(`play-${i}`).textContent = '播放';
+                    }
+                });
+
+                audio.play();
+                playBtn.textContent = '暂停';
+            } else {
+                audio.pause();
+                playBtn.textContent = '播放';
+            }
+        }
+
+        // 停止音乐
+        function stopMusic(index) {
+            const audio = audioPlayers[index];
+            const playBtn = document.getElementById(`play-${index}`);
+
+            audio.pause();
+            audio.currentTime = 0;
+            playBtn.textContent = '播放';
+        }
+
+        // 全局快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                togglePlay(0); // 空格键播放第一首音乐
+            }
+        });
+    </script>
+</body>
+</html>

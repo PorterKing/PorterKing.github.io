@@ -1,136 +1,106 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>JCB & HLX</title>
-    <link rel="icon" href="./img/logo_32.ico" type="image/x-icon">
-    <link rel="stylesheet" href="./css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="./css/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波&雪的专属纪念</title>
+    <link rel="stylesheet" href="src/styles.css">
 </head>
-
 <body>
-    <div id="back">
-        <div class="mask"></div>
-        <!-- 设置展示的图片，github pages不能有后台程序只能一条一条手动添加了 囧 -->
-        <div id="carousel"  class="carousel slide carousel-fade carousel-position">
-            <div class="carousel-inner" style="width: 100%;height: 100%;" id="background">
-                <div class="item active" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background:url(./img/1.jpg);background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/2.jpg) ;background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/3.jpg) ;background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/4.jpg) ;background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/5.jpg) ;background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/6.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/7.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/8.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/9.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/10.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/11.jpg) ;background-size: contain;"></div>
-                </div>
-                 <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/12.jpg) ;background-size: contain;"></div>
-                </div>
-                <div class="item" style="width: 100%;height: 100%;">
-                    <div style="width: 100%;height: 100%;background-image: url(./img/13.jpg) ;background-size: contain;"></div>
-                </div>
-            </div>
-        </div>
+    <!-- 背景图片轮播容器 -->
+    <div class="background-slider" id="backgroundSlider">
+        <!-- 图片会动态插入这里 -->
     </div>
-    <div class="modal show" style="top:24%;">
 
-        <div class="modal-dialog" style="opacity: .9" onclick="playAudio()">
-            <div class="modal-content" style="opacity:.85">
-                <div class="modal-header">
-                    <h1 class="text-center" style="color: #A94442;font-family: 'Noto Serif TC', Arial, sans-serif;font-size: 6rem;" >我们一起度过的美好时光.</h1>
-                    <p class="text-center small-title" style="font-size: 24px;">JCB & HLX</p>
-                </div>
-                <div class="modal-body text-center" style="line-height: 1.5rem;font-family: 'JournalRegular', Arial, sans-serif;font-size: 3.5rem;">
-                    <p>
-                        <span id="day" class="time-font"></span><span style="color:#A94442;font-family:sans-serif;font-size: 2rem;">天</span>
-                        <span id="hour" class="time-font"></span><span style="color:#A94442;font-family:sans-serif;font-size: 2rem;">小时</span>
-                        <span id="minute" class="time-font"></span><span style="color:#A94442;font-family:sans-serif;font-size: 2rem;">分钟</span>
-                        <span id="second" class="time-font"></span><span style="color:#A94442;font-family:sans-serif;font-size: 2rem;">秒</span>
-                    </p>
-                    <p class="text-center" style="color:#A94442;font-size: 17px" id="say"></p>
-                </div>
-            </div>
-        </div>
+    <!-- 主要内容容器 -->
+    <div class="container">
+        <!-- 头部区域 -->
+        <header class="love-header">
+            <h1 class="love-title">波&雪的专属回忆</h1>
+            <p class="love-subtitle">只属于我们的美好时光</p>
+        </header>
 
-        <div style="width: 100%; margin: 0 auto;  text-align: center;">
-            <audio style="opacity: .8; margin: 0 auto;"  controls autoplay loop>
-                <source src="music.mp3" type="audio/mpeg">
-                您的浏览器不支持音频元素。
-            </audio>
-        </div>
+        <!-- 主要内容区域 -->
+        <main class="love-main">
+            <!-- 时间计数器 - 核心功能 -->
+            <section class="love-timer-section">
+                <div class="timer-container">
+                    <h2 class="timer-title">我们在一起已经</h2>
+                    <div class="timer-display" id="loveTimer">
+                        <div class="time-unit">
+                            <span class="time-number" id="days">0</span>
+                            <span class="time-label">天</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="time-number" id="hours">0</span>
+                            <span class="time-label">小时</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="time-number" id="minutes">0</span>
+                            <span class="time-label">分钟</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="time-number" id="seconds">0</span>
+                            <span class="time-label">秒</span>
+                        </div>
+                    </div>
+                    <p class="timer-date">从 2024年3月18日 开始</p>
+                </div>
+            </section>
+
+            <!-- 音乐播放器控制 -->
+            <section class="music-section">
+                <div class="music-player" id="musicPlayer">
+                    <button class="music-btn" id="playBtn">
+                        <span class="music-icon">▶️</span>
+                        <span class="music-text">播放音乐</span>
+                    </button>
+                    <div class="music-info" id="musicInfo">
+                        <span class="music-name">暂无音乐</span>
+                    </div>
+                    <div class="volume-control">
+                        <span class="volume-icon">🔊</span>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 图片导航控制 -->
+            <section class="image-control-section">
+                <div class="image-controls">
+                    <button class="img-btn" id="prevBtn">⬅️ 上一张</button>
+                    <div class="image-info">
+                        <span id="imageCounter">1 / 1</span>
+                    </div>
+                    <button class="img-btn" id="nextBtn">下一张 ➡️</button>
+                </div>
+                <div class="auto-play-control">
+                    <label class="switch">
+                        <input type="checkbox" id="autoPlayToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="switch-label">自动轮播</span>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部信息 -->
+        <footer class="love-footer">
+            <p class="love-message">💕 愿我们的爱情如星辰般永恒 💕</p>
+        </footer>
     </div>
-   
-    <script type="text/javascript" src="./js/jquery-1.12.2.min.js"></script>
-    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="./js/count-time.js"></script>
-    <script>
- 
-    </script>
-    <script>
-    $(function() {
-        //设置起始日期
-        countTime('2024/03/18 12:00', 'day', 'hour', 'minute', 'second');
-        var days = $('#day').text();
 
+    <!-- 爱心动画背景 -->
+    <div class="hearts-background" id="heartsBackground">
+        <!-- 爱心动画会动态生成 -->
+    </div>
 
-        //设置每一张图片对应的文字
-        var says = new Array(
-            "第一次牵手～～～！！",
-            "第一次出来拍合照，帅哥靓女！",
-            "我们的第一次露营，虽然风雨交加，一起相拥取暖也好浪漫不是？",
-            "我们去澳门啦～！",
-            "那么酷热的天气，丝毫浇不灭我们拍照的热情",
-            "沉浸在澳门的纸醉金迷中",
-            "第一次一起做手工，美丽精致的小银镯，独一无二的狗牌",
-            "在电玩城里，就是这么随地大小亲，啊哈哈哈哈！",
-            "我们订婚啦～，执子之手与子偕老",
-            "美好的夕阳与我们",
-            "我们的湘西之旅，成为苗寨人的一天",
-            "第二次露营完美成功，看见美丽的日出，漫天的星空",
-            "日常鬼脸，可可爱爱"
-        );
-
-
-        var start = function() {
-            var index = 0;
-            var rate = 5000;
-            $('#say').text(says[(index++) % says.length]);
-         	var _play = function () {
-         		$('#say').hide();
-                $('#say').text(says[(index++) % says.length]);
-                $('#say').fadeToggle();
-                $('#carousel').carousel('next');
-         	};
-            setInterval(_play, rate);
-        }();
-
-    });
-    </script>
+    <!-- JavaScript 模块 -->
+    <script src="config/love-config.js"></script>
+    <script src="config/images-list-fixed.js"></script>
+    <script src="src/love-timer.js"></script>
+    <script src="src/image-slider.js"></script>
+    <script src="src/music-player.js"></script>
+    <script src="src/main.js"></script>
 </body>
-
 </html>
