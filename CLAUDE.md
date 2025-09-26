@@ -15,8 +15,12 @@ npm start
 npm run dev
 # 或直接使用Python
 python3 -m http.server 3000
+# 或使用项目提供的启动脚本
+python3 start_server.py
 ```
 在浏览器中访问 http://localhost:3000
+
+启动服务器会自动显示已发现的图片和音乐文件数量
 
 ### 项目构建
 ```bash
@@ -98,8 +102,10 @@ bo&xue/
 │   ├── images/              # 图片文件夹（用户添加照片）
 │   └── music/               # 音乐文件夹（用户添加音乐）
 ├── config/                  # 配置文件
-│   └── love-config.js       # 核心配置
-└── package.json            # 项目配置
+│   ├── love-config.js       # 核心配置
+│   └── images-list-fixed.js # 图片和音乐文件列表
+├── package.json            # 项目配置
+└── start_server.py         # Python启动脚本
 ```
 
 ## 用户使用指南
@@ -156,6 +162,15 @@ bo&xue/
 - 打开浏览器控制台查看日志
 - 使用 `window.loveApp` 访问应用实例
 - 检查文件加载情况（Network面板）
+- 图片和音乐文件通过动态扫描加载，如添加新文件需刷新页面
+
+### 快捷键操作
+- **P**: 播放/暂停音乐
+- **N**: 下一首音乐
+- **←/→**: 切换图片
+- **Space**: 开关自动轮播
+- **Ctrl+H**: 显示帮助信息
+- **Ctrl+I**: 显示系统信息
 
 ## 部署建议
 
