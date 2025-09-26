@@ -280,11 +280,16 @@ class LoveMemoryApp {
         Space - 开关自动轮播
         Ctrl+H - 显示帮助
         Ctrl+I - 显示信息
+        Ctrl+D - 显示调试信息
 
         🖱️ 鼠标操作：
         点击 - 产生爱心特效
         双击 - 显示随机爱情话语
         滑动 - 切换图片（移动端）
+
+        🔧 调试提示：
+        如果遇到问题，请按Ctrl+D查看调试信息
+        或按F12打开控制台查看详细日志
         `;
 
         this.showFloatingMessage(helpText, 8000);
@@ -310,6 +315,36 @@ class LoveMemoryApp {
         `;
 
         this.showFloatingMessage(infoText, 6000);
+    }
+
+    showDebugInfo() {
+        if (!window.debugHelper) {
+            this.showFloatingMessage('⚠️ 调试工具未加载', 3000);
+            return;
+        }
+
+        const debugInfo = window.debugHelper.showDebugInfo();
+        const env = debugInfo.environment;
+
+        const debugText = `
+        🔧 调试信息：
+        🌍 环境: ${env.isGitHubPages ? 'GitHub Pages' : env.isLocalhost ? '本地' : '其他'}
+        🔒 协议: ${env.isHTTPS ? 'HTTPS' : 'HTTP'}
+        📍 域名: ${env.hostname}
+
+        📋 配置状态：
+        ⚙️ 主配置: ${debugInfo.config.hasLoveConfig ? '✅' : '❌'}
+        🖼️ 图片配置: ${debugInfo.config.hasImagesList ? '✅' : '❌'}
+        🎵 音乐配置: ${debugInfo.config.hasMusicList ? '✅' : '❌'}
+
+        💻 性能：
+        ⏱️ 加载时间: ${debugInfo.performance.loadTime.toFixed(0)}ms
+        🧠 内存使用: ${debugInfo.performance.memory}
+
+        💡 提示：按F12查看详细控制台日志
+        `;
+
+        this.showFloatingMessage(debugText, 10000);
     }
 
     // 获取应用状态
