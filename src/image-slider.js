@@ -10,6 +10,10 @@ class ImageSlider {
         this.images = [];
         this.autoPlayInterval = null;
         this.isAutoPlay = true;
+        this.imageCache = new Map();
+        this.loadingQueue = [];
+        this.isInitialLoadComplete = false;
+        this.preloadedImages = new Set();
 
         this.elements = {
             backgroundSlider: document.getElementById('backgroundSlider'),
@@ -50,41 +54,84 @@ class ImageSlider {
 
         console.log(`正在检查 ${imagesToCheck.length} 张图片...`);
 
-        // 检查哪些图片存在
-        this.images = await this.checkImagesExist(imagesToCheck);
+        // 优先加载前几张图片
+        const priorityImages = await this.loadPriorityImages(imagesToCheck.slice(0, 5));
 
-        console.log(`成功加载 ${this.images.length} 张图片`);
+        if (priorityImages.length > 0) {
+            this.images = priorityImages;
+            this.showImage(0); // 立即显示第一张
+            this.updateCounter();
+            console.log(`优先加载了前 ${priorityImages.length} 张图片`);
+        }
+
+        // 后台继续加载剩余图片
+        this.loadRemainingImages(imagesToCheck);
     }
 
-    async checkImagesExist(imagePaths) {
+    async loadPriorityImages(priorityPaths) {
+        console.log('正在优先加载前几张图片...');
         const existingImages = [];
 
-        // 使用并发检测来提升性能，每次并发检查10个图片
-        const batchSize = 10;
+        // 顺序加载优先图片，确保按顺序显示
+        for (const imagePath of priorityPaths) {
+            try {
+                const exists = await this.preloadImage(imagePath);
+                if (exists) {
+                    existingImages.push(imagePath);
+                    this.preloadedImages.add(imagePath);
+                }
+            } catch (error) {
+                continue;
+            }
+        }
 
-        for (let i = 0; i < imagePaths.length; i += batchSize) {
-            const batch = imagePaths.slice(i, i + batchSize);
+        return this.sortImagesByNumber(existingImages);
+    }
+
+    async loadRemainingImages(allImagePaths) {
+        console.log('后台加载剩余图片...');
+        const remainingPaths = allImagePaths.filter(path => !this.preloadedImages.has(path));
+
+        // 使用较小的批次和更快的超时
+        const batchSize = 5;
+        const allExistingImages = [...this.images];
+
+        for (let i = 0; i < remainingPaths.length; i += batchSize) {
+            const batch = remainingPaths.slice(i, i + batchSize);
 
             const batchResults = await Promise.allSettled(
                 batch.map(async (imagePath) => {
-                    const exists = await this.imageExists(imagePath);
+                    const exists = await this.fastImageCheck(imagePath);
                     return { path: imagePath, exists };
                 })
             );
 
-            // 收集存在的图片
-            batchResults.forEach((result, index) => {
+            // 收集新发现的图片
+            const newImages = [];
+            batchResults.forEach((result) => {
                 if (result.status === 'fulfilled' && result.value.exists) {
-                    existingImages.push(result.value.path);
+                    newImages.push(result.value.path);
                 }
             });
 
-            // 显示检测进度
-            console.log(`图片检测进度: ${Math.min(i + batchSize, imagePaths.length)}/${imagePaths.length}`);
+            if (newImages.length > 0) {
+                // 添加到总列表并重新排序
+                allExistingImages.push(...newImages);
+                this.images = this.sortImagesByNumber(allExistingImages);
+                this.updateCounter();
+                console.log(`发现了 ${newImages.length} 张新图片，总计 ${this.images.length} 张`);
+            }
+
+            // 避免阻塞UI
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
 
-        // 按数字顺序排序图片
-        return existingImages.sort((a, b) => {
+        this.isInitialLoadComplete = true;
+        console.log(`所有图片加载完成，共 ${this.images.length} 张`);
+    }
+
+    sortImagesByNumber(imagePaths) {
+        return imagePaths.sort((a, b) => {
             const getNumber = (path) => {
                 const match = path.match(/(\d+)\./);
                 return match ? parseInt(match[1]) : 999;
@@ -93,22 +140,108 @@ class ImageSlider {
         });
     }
 
-    imageExists(imagePath) {
+    preloadImage(imagePath) {
         return new Promise((resolve) => {
-            const img = new Image();
+            // 检查缓存
+            if (this.imageCache.has(imagePath)) {
+                resolve(true);
+                return;
+            }
 
-            img.onload = () => {
+            const img = new Image();
+            let isResolved = false;
+
+            const handleLoad = () => {
+                if (isResolved) return;
+                isResolved = true;
+                this.imageCache.set(imagePath, img);
+                console.log(`✅ 图片预加载成功: ${imagePath.split('/').pop()}`);
                 resolve(true);
             };
 
-            img.onerror = () => {
+            const handleError = () => {
+                if (isResolved) return;
+                isResolved = true;
+                console.log(`❌ 图片不存在: ${imagePath.split('/').pop()}`);
                 resolve(false);
             };
 
-            // 设置超时
-            setTimeout(() => resolve(false), 3000);
+            img.onload = handleLoad;
+            img.onerror = handleError;
 
+            // 优先图片使用较长超时，确保重要图片能加载完成
+            const timeoutId = setTimeout(() => {
+                if (!isResolved) {
+                    isResolved = true;
+                    console.log(`⏰ 图片加载超时: ${imagePath.split('/').pop()}`);
+                    resolve(false);
+                }
+            }, 10000);
+
+            // 设置图片源，触发加载
             img.src = imagePath;
+
+            // 清理超时器
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                handleLoad();
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                handleError();
+            };
+        });
+    }
+
+    fastImageCheck(imagePath) {
+        return new Promise((resolve) => {
+            // 检查缓存
+            if (this.imageCache.has(imagePath)) {
+                resolve(true);
+                return;
+            }
+
+            const img = new Image();
+            let isResolved = false;
+
+            const handleLoad = () => {
+                if (isResolved) return;
+                isResolved = true;
+                this.imageCache.set(imagePath, img);
+                resolve(true);
+            };
+
+            const handleError = () => {
+                if (isResolved) return;
+                isResolved = true;
+                resolve(false);
+            };
+
+            img.onload = handleLoad;
+            img.onerror = handleError;
+
+            // 后台加载使用较短超时，快速检测
+            const timeoutId = setTimeout(() => {
+                if (!isResolved) {
+                    isResolved = true;
+                    resolve(false);
+                }
+            }, 4000);
+
+            // 设置图片源
+            img.src = imagePath;
+
+            // 清理超时器
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                handleLoad();
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                handleError();
+            };
         });
     }
 
@@ -194,31 +327,102 @@ class ImageSlider {
 
         // 更新背景图片
         if (this.elements.backgroundSlider) {
-            // 创建新的图片元素
-            const imgElement = document.createElement('div');
-            imgElement.className = 'background-image active';
-            imgElement.style.backgroundImage = `url(${imagePath})`;
-
-            // 移除之前的图片
-            const oldImages = this.elements.backgroundSlider.querySelectorAll('.background-image');
-            oldImages.forEach(img => {
-                img.classList.remove('active');
-                setTimeout(() => {
-                    if (img.parentNode) {
-                        img.parentNode.removeChild(img);
-                    }
-                }, 500);
-            });
-
-            // 添加新图片
-            this.elements.backgroundSlider.appendChild(imgElement);
+            this.showImageWithTransition(imagePath);
         }
+
+        // 预加载相邻图片
+        this.preloadAdjacentImages();
+
+        // 定期清理缓存
+        this.cleanupCache();
 
         // 更新计数器
         this.updateCounter();
 
         // 添加切换动画效果
         this.addTransitionEffect();
+    }
+
+    showImageWithTransition(imagePath) {
+        // 创建新的图片元素
+        const imgElement = document.createElement('div');
+        imgElement.className = 'background-image';
+
+        // 先隐藏，等加载完再显示
+        imgElement.style.opacity = '0';
+        imgElement.style.transition = 'opacity 0.5s ease-in-out';
+
+        // 检查是否有缓存的图片
+        if (this.imageCache.has(imagePath)) {
+            imgElement.style.backgroundImage = `url(${imagePath})`;
+            imgElement.style.opacity = '1';
+            imgElement.classList.add('active');
+        } else {
+            // 显示加载占位符
+            imgElement.classList.add('loading');
+            imgElement.innerHTML = `
+                <div class="image-loading">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            `;
+
+            // 异步加载图片
+            this.loadImageAsync(imagePath).then((success) => {
+                if (success) {
+                    imgElement.innerHTML = '';
+                    imgElement.classList.remove('loading');
+                    imgElement.style.backgroundImage = `url(${imagePath})`;
+                    imgElement.style.opacity = '1';
+                    imgElement.classList.add('active');
+                }
+            });
+        }
+
+        // 移除之前的图片
+        const oldImages = this.elements.backgroundSlider.querySelectorAll('.background-image');
+        oldImages.forEach(img => {
+            img.classList.remove('active');
+            img.style.opacity = '0';
+            setTimeout(() => {
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                }
+            }, 500);
+        });
+
+        // 添加新图片
+        this.elements.backgroundSlider.appendChild(imgElement);
+    }
+
+    async loadImageAsync(imagePath) {
+        try {
+            const success = await this.fastImageCheck(imagePath);
+            return success;
+        } catch (error) {
+            console.error(`图片加载失败: ${imagePath}`, error);
+            return false;
+        }
+    }
+
+    preloadAdjacentImages() {
+        if (this.images.length <= 1) return;
+
+        // 预加载前后各2张图片
+        const preloadIndices = [];
+        for (let i = -2; i <= 2; i++) {
+            if (i === 0) continue; // 跳过当前图片
+            const index = (this.currentImageIndex + i + this.images.length) % this.images.length;
+            preloadIndices.push(index);
+        }
+
+        // 异步预加载
+        preloadIndices.forEach(index => {
+            const imagePath = this.images[index];
+            if (!this.imageCache.has(imagePath)) {
+                this.fastImageCheck(imagePath);
+            }
+        });
     }
 
     updateCounter() {
@@ -325,9 +529,51 @@ class ImageSlider {
         };
     }
 
+    // 缓存清理机制
+    cleanupCache() {
+        // 当缓存超过50张图片时，清理不常用的图片
+        if (this.imageCache.size > 50) {
+            console.log('开始清理图片缓存...');
+            const keys = Array.from(this.imageCache.keys());
+            const currentImagePath = this.images[this.currentImageIndex];
+
+            // 保留当前图片和相邻的10张图片
+            const keepPaths = new Set();
+            for (let i = -5; i <= 5; i++) {
+                const index = (this.currentImageIndex + i + this.images.length) % this.images.length;
+                if (this.images[index]) {
+                    keepPaths.add(this.images[index]);
+                }
+            }
+
+            // 删除不需要保留的缓存
+            keys.forEach(path => {
+                if (!keepPaths.has(path)) {
+                    this.imageCache.delete(path);
+                }
+            });
+
+            console.log(`缓存清理完成，保留 ${this.imageCache.size} 张图片`);
+        }
+    }
+
+    // 获取缓存统计
+    getCacheStats() {
+        return {
+            cachedImages: this.imageCache.size,
+            totalImages: this.images.length,
+            preloadedImages: this.preloadedImages.size,
+            cacheHitRate: this.imageCache.size / Math.max(this.images.length, 1)
+        };
+    }
+
     // 销毁轮播器
     destroy() {
         this.stopAutoPlay();
+        this.imageCache.clear();
+        this.preloadedImages.clear();
+        this.loadingQueue = [];
+        console.log('图片轮播器已销毁，缓存已清理');
     }
 }
 
